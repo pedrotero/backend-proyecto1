@@ -2,11 +2,25 @@
 import Usuario from './usuario.model';
 
 export async function getUsuario(req,res) {
-  // const { name } = req.query;
+  try {
+    const {_id, email, password} = req.query;
 
-  const usuarios = await Usuario.find(req.query);
+    if(_id){
 
-  res.status(200).json(usuarios);
+      const usuarios = await Usuario.findOne({isDeleted: false, _id});
+      res.status(200).json(usuarios);
+    }else if(email && password){
+      const usuarios = await Usuario.findOne({isDeleted: false, email, password});
+      res.status(200).json(usuarios);
+    }else{
+      res.status(400).json(new Error('Parámetros incompletos o inválidos'));
+    }
+    
+    
+  } catch (err) {
+    res.status(500).json(err);
+  }
+  
 }
 
 export async function createUsuario(req, res) {
@@ -23,8 +37,8 @@ export async function createUsuario(req, res) {
 export async function patchUsuario(req, res) {
   try {
 
-    const {_id, ...update} = req.body;
-    const resultado = await Usuario.findByIdAndUpdate(_id, update,{ new: true, runValidators: true})
+    const {_id, ...values} = req.body;
+    const resultado = await Usuario.findOneAndUpdate({_id, isDeleted: false}, values,{ new: true, runValidators: true});
     res.status(200).json(resultado);
   } catch (err) {
     res.status(500).json(err);
@@ -36,8 +50,8 @@ export async function patchUsuario(req, res) {
 
 export async function deleteUsuario(req, res) {
   try {
-    const {_id} = req.params;
-    const resultado = await Usuario.findByIdAndUpdate(_id,{"isDeleted":true})
+    const {_id} = req.body;
+    const resultado = await Usuario.findOneAndUpdate({_id, isDeleted: false},{"isDeleted":true},{ new: true, runValidators: true})
     res.status(200).json({resultado});
   } catch (err) {
     res.status(500).json(err);
