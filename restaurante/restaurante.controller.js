@@ -11,7 +11,7 @@ export async function getRestaurante(req,res) {
     const result = await Restaurante.find({name,isDeleted: false, tags: { $all: tags}}).sort((restA,restB) => {restB.pedidoCount - restA.pedidoCount});
     res.status(200).json(result);
   }else{
-    res.status(400).json(new Error('Parámetros incompletos o inválidos'));
+    res.status(400).json({message: "Parámetros incompletos o inválidos"})
   }
   
 

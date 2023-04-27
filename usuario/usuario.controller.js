@@ -4,7 +4,6 @@ import Usuario from './usuario.model';
 export async function getUsuario(req,res) {
   try {
     const {_id, email, password} = req.query;
-
     if(_id){
 
       const usuarios = await Usuario.findOne({isDeleted: false, _id});
@@ -13,9 +12,8 @@ export async function getUsuario(req,res) {
       const usuarios = await Usuario.findOne({isDeleted: false, email, password});
       res.status(200).json(usuarios);
     }else{
-      res.status(400).json(new Error('Parámetros incompletos o inválidos'));
+      res.status(400).json({message: "Parámetros incompletos o inválidos"})
     }
-    
     
   } catch (err) {
     res.status(500).json(err);

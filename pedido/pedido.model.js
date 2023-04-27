@@ -3,17 +3,17 @@ const mongoose = require('mongoose');
 const pedidoSchema = mongoose.Schema(
     {
       // campos
-      restId: { type: mongoose.Schema.Types.ObjectId, ref:"restaurante", required: true, validate:{
+      restId: { type: mongoose.Schema.Types.ObjectId, ref:"restaurante", required: true, immutable: true, validate:{
         validator: async function (id){
           const user = await mongoose.model("restaurante").findById(id);
           if(!user) throw new Error("Restaurante no existe");}
       }},
-      productosIds: { type: [mongoose.Schema.Types.ObjectId], ref:"producto", default: [], validate:{
-        validator: async function (id){
-          const prod = await mongoose.model("producto").findById(id);
+      productosIds: [{ type: [mongoose.Schema.Types.ObjectId], ref:"producto", validate:{
+        validator: async function (_id){
+          const prod = await mongoose.model("producto").findById(_id);
           if(!prod) throw new Error("producto no existe");}
-      }},
-      clienteId: { type: mongoose.Schema.Types.ObjectId, ref:"usuario", required: true, validate:{
+      }}],
+      clienteId: { type: mongoose.Schema.Types.ObjectId, ref:"usuario", required: true, immutable: true, validate:{
         validator: async function (id){
           const user = await mongoose.model("usuario").findById(id);
           if(!user|| user.type!= 1) throw new Error("Usuario no existe o no es un cliente");}
