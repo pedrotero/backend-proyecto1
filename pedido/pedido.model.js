@@ -25,7 +25,6 @@ const pedidoSchema = mongoose.Schema(
       }},
       estado: {type: String, default: "creado", enum:["creado", "enviado", "aceptado", "recibido", "endireccion", "realizado"]},
       isDeleted: { type: Boolean, default: false },
-      fechaCreacion: { type: Date, default: Date.now}
     },
     { timestamps: true }
   );

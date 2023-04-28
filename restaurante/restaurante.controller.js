@@ -2,20 +2,19 @@
 import Restaurante from './restaurante.model';
 
 export async function getRestaurante(req,res) {
-  const {_id, namestr, tags} = req.query;
+  let {_id, name, tags=[]} = req.query;
+  tags = JSON.parse(tags)
   if (_id) {
     const result = await Restaurante.findOne({_id, isDeleted:true});
     res.status(200).json(result);
-  }else if(namestr || cat){
-    name = { $regex: /namestr/, $options: "i"}
-    const result = await Restaurante.find({name,isDeleted: false, tags: { $all: tags}}).sort((restA,restB) => {restB.pedidoCount - restA.pedidoCount});
+  }else if(name || tags){
+    console.log({name: { $regex: name, $options: "i"},isDeleted: false, tags})
+    const result = await Restaurante.find({name: { $regex: name, $options: "i"},isDeleted: false, tags}).sort({pedidoCount: -1});
     res.status(200).json(result);
   }else{
     res.status(400).json({message: "Parámetros incompletos o inválidos"})
   }
   
-
-  res.status(200).json(result);
 }
 
 export async function createRestaurante(req, res) {
