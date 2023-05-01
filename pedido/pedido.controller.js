@@ -1,6 +1,7 @@
 
 import Pedido from './pedido.model';
 import Restaurante from '../restaurante/restaurante.model.js';
+import Producto from '../producto/producto.model.js';
 export async function getPedido(req,res) {
   try {
     const {_id, date1, date2, ...query} = req.query;
@@ -42,17 +43,52 @@ export async function createPedido(req, res) {
   }
 }
 
+
+//profe, intenté de todas las formas posibles con map y esas vainas pero se quedaban en promise :(. Tocó con for 🤢😫😥😨😱😭😰😧
+async function calctotal(productosIds){
+  let tot = 0;
+  for (const prodid of productosIds) {
+    tot+= await Producto.findById(prodid).then(prod => prod.precio)
+  }
+  return tot
+}
+
+
 export async function patchPedido(req, res) {
   try {
 
-    const {_id, ...values} = req.body;
-    const resultado = await Pedido.findByIdAndUpdate({_id, isDeleted: false},values,{ new: true, runValidators: true});
-    const {restId,estado} = resultado;
-    if (estado == "realizado") {
-      await Restaurante.findByIdAndUpdate(restId,{$inc:{pedidoCount: 1}});
+    const {_id, productosIds, ...values} = req.body;
+    const pedido = await Pedido.findById(_id);
+    
+    if (pedido.estado == "creado") {
+      if (productosIds) {
+        const total = await calctotal(productosIds);
+        const {estado} = values;
+        const resultado = await Pedido.findOneAndUpdate({_id, isDeleted: false},{productosIds,estado, total},{ new: true, runValidators: true});
+        res.status(200).json(resultado);
+      }else{
+        const {estado} = values;
+        const resultado = await Pedido.findOneAndUpdate({_id, isDeleted: false},{estado},{ new: true, runValidators: true});
+        res.status(200).json(resultado);
+      }
+      
+      
+    }else if (pedido.estado == "enviado") {
+      const {domiId} = values;
+      const resultado = await Pedido.findOneAndUpdate({_id, isDeleted: false},{domiId,estado: "aceptado"},{ new: true, runValidators: true});
+      res.status(200).json(resultado);
+    }else {
+      const {estado} = values;
+      const resultado = await Pedido.findOneAndUpdate({_id, isDeleted: false},{estado},{ new: true, runValidators: true});
+      if (estado=="realizado") {
+        const {restId} = resultado;
+        await Restaurante.findByIdAndUpdate(restId,{$inc:{pedidoCount: 1}});
+      }
+      res.status(200).json(resultado);
     }
-    res.status(200).json(resultado);
+    
   } catch (err) {
+    console.log(err)
     res.status(500).json(err);
   }
   

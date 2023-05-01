@@ -24,6 +24,7 @@ const pedidoSchema = mongoose.Schema(
           if(!user|| user.type!= 2) throw new Error("Usuario no existe o no es un cliente");}
       }},
       estado: {type: String, default: "creado", enum:["creado", "enviado", "aceptado", "recibido", "endireccion", "realizado"]},
+      total: {type: Number, default: 0},
       isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true }
